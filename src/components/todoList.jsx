@@ -1,16 +1,16 @@
 import { useDispatch, useSelector } from "react-redux";
+
 import { useState } from "react";
-import {
-  addTodo,
-  deleteTodo,
-  toggleComplete,
-} from "../redux/slices/Todo/todoSlice";
+import { addTodo, editTodo } from "../redux/slices/Todo/todoSlice";
 import TotalCompletedTodo from "./totalCompletedTodo";
+import TodoItems from "./todoitems";
 
 const TodoList = () => {
   const [values, setValues] = useState("");
   const todos = useSelector((state) => state.todos);
   const dispatch = useDispatch();
+  const [editToggle, setEditToggle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(todos.title);
 
   const addTodoItems = () => {
     const trimmedValue = values.trim();
@@ -27,21 +27,15 @@ const TodoList = () => {
     }
   };
 
-  const deleteTodoList = (id) => {
+  const handleSave = () => {
     dispatch(
-      deleteTodo({
-        id: id,
+      editTodo({
+        id: todos.id,
+        title: editedTitle,
       })
     );
-  };
 
-  const toggleCompleted = (id, completed) => {
-    dispatch(
-      toggleComplete({
-        id: id,
-        completed: !completed,
-      })
-    );
+    setEditToggle(false);
   };
 
   return (
@@ -51,7 +45,6 @@ const TodoList = () => {
           display: "flex",
           flexDirection: "column",
           gap: "10px",
-          // border: "1px solid black",
           padding: " 30px",
         }}
       >
@@ -71,40 +64,30 @@ const TodoList = () => {
               }
             }}
           />
-          <button
-            className=" bg-black whitespace-nowrap text-white rounded-md py-[6px] px-3 font-medium ml-5"
-            onClick={addTodoItems}
-          >
-            Add Todo
-          </button>
+
+          <span>
+            <button
+              className=" bg-black whitespace-nowrap text-white rounded-md py-[6px] px-3 font-medium ml-5"
+              onClick={addTodoItems}
+            >
+              Add Todo
+            </button>
+          </span>
         </span>
 
         <ul className=" mt-5 flex flex-col items-start justify-center rounded-md divide-y divide-black/20 ul-shadow *:py-3">
-          {todos.map(({ id, title, completed }) => (
-            <label
-              className={` ${
-                completed == true ? "bg-green-200 text-black" : ""
-              } text-base px-3  flex justify-between items-center w-full cursor-pointer `}
-              key={id}
-            >
-              <span className=" flex items-center gap-3">
-                <input
-                  checked={completed}
-                  className=" size-4"
-                  type="checkbox"
-                  onChange={() => toggleCompleted(id, completed)}
-                />
-                <span className="flex-wrap flex w-full">{title}</span>
-              </span>
-
-              <button
-                onClick={() => deleteTodoList(id)}
-                className=" min-h-full ml-3 py-1 bg-red-600 rounded-sm text-white font-medium px-3"
-              >
-                Delete
-              </button>
-            </label>
-          ))}
+          {todos.map((todo) => {
+            return (
+              <TodoItems
+                key={todo.id}
+                todo={todo}
+                setEditToggle={setEditToggle}
+                setEditedTitle={setEditedTitle}
+                editToggle={editToggle}
+                handleSave={handleSave}
+              />
+            );
+          })}
         </ul>
 
         <TotalCompletedTodo />
